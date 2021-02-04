@@ -1,0 +1,31 @@
+{
+  "name": "fullstackzadatakbackend",
+  "version": "1.0.0",
+  "description": "Backend part of the Fullstack Assignment for BALKON",
+  "main": "server.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "server": "nodemon server.js"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/HarisHorozovic/fullstackzadatakbackend.git"
+  },
+  "author": "Haris Horozovic",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/HarisHorozovic/fullstackzadatakbackend/issues"
+  },
+  "homepage": "https://github.com/HarisHorozovic/fullstackzadatakbackend#readme",
+  "dependencies": {
+    "bcryptjs": "^2.4.3",
+    "express": "^4.17.1",
+    "jsonwebtoken": "^8.5.1",
+    "knex": "^0.21.17",
+    "morgan": "^1.10.0",
+    "mysql": "^2.18.1"
+  },
+  "devDependencies": {
+    "nodemon": "^2.0.7"
+  }
+}
