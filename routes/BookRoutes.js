@@ -4,17 +4,30 @@ const bookController = require('../controllers/BookController');
 const authorController = require('../controllers/AuthorController');
 const authController = require('../controllers/AuthController');
 
+const upload = require('../utils/multer');
+const uploadImage = require('../utils/uploadImage');
+
 const router = express.Router();
 
 router
   .route('/')
   .get(bookController.getAllBooks)
-  .post(authController.isLoggedIn, bookController.createBook);
+  .post(
+    authController.isLoggedIn,
+    upload.single('image'),
+    uploadImage,
+    bookController.createBook
+  );
 
 router
   .route('/:id')
   .get(bookController.getBook)
-  .put(authController.isLoggedIn, bookController.updateBook)
+  .put(
+    authController.isLoggedIn,
+    upload.single('image'),
+    uploadImage,
+    bookController.updateBook
+  )
   .delete(authController.isLoggedIn, bookController.deleteBook);
 
 // Protect routes from unauthorized users

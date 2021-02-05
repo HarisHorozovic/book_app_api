@@ -1,4 +1,5 @@
 const db = require('../database');
+const cloudinary = require('../utils/cloudinary');
 
 exports.getAllBooks = (req, res) => {
   db.select()
@@ -13,16 +14,17 @@ exports.getAllBooks = (req, res) => {
 };
 
 exports.createBook = (req, res) => {
-  const { title, pages, published } = req.body;
-  let { image, isbn } = req.body;
+  const { title, pages, published, cloudinary_id } = req.body;
+  let { imageurl, isbn } = req.body;
 
-  if (image == '') image = null;
+  if (imageurl == '' || !imageurl) imageurl = null;
+
   if (isbn == '' || isbn == null) {
     res.status(500).json({ status: 'fail', data: 'Book must have ISBN' });
   }
 
   db('books')
-    .insert({ isbn, title, pages, published, image })
+    .insert({ isbn, title, pages, published, image: imageurl, cloudinary_id })
     .then((data) => {
       res.status(201).json({ status: 'success', data });
     });
@@ -44,13 +46,31 @@ exports.getBook = (req, res) => {
 };
 
 exports.updateBook = (req, res) => {
-  const { isbn, title, pages, published } = req.body;
-  let { image } = req.body;
+  const { isbn, title, pages, published, cloudinary_id } = req.body;
+  let { imageurl } = req.body;
 
-  if (!image) image = null;
+  // Check to see if the image is beeing uploaded
+  if (!imageurl) imageurl = null;
+  // If it is then delete old image from the cloud
+  else {
+    // Retrieve the user we want to update
+    db.select('cloudinary_id')
+      .from('books')
+      .where({ isbn: req.params.id })
+      .then((data) => {
+        old_cloudinary_id = data[0].cloudinary_id;
+
+        // Delete old image from cloudinary
+        if (old_cloudinary_id || old_cloudinary_id != '') {
+          cloudinary.uploader.destroy(old_cloudinary_id, function (err, res) {
+            console.log(err, res);
+          });
+        }
+      });
+  }
 
   db('books')
-    .update({ isbn, title, pages, published, image })
+    .update({ isbn, title, pages, published, image: imageurl, cloudinary_id })
     .where({ isbn: req.params.id })
     .then((data) => {
       if (data < 1) {
@@ -65,6 +85,27 @@ exports.updateBook = (req, res) => {
 };
 
 exports.deleteBook = (req, res) => {
+  // Remove author from all the books
+  db('book_authors')
+    .delete()
+    .where('book_id', req.params.id)
+    .then(() => {});
+
+  // Retrieve the user we want to delete
+  db.select('cloudinary_id')
+    .from('books')
+    .where({ isbn: req.params.id })
+    .then((data) => {
+      old_cloudinary_id = data[0].cloudinary_id;
+
+      // Delete old image from cloudinary
+      if (old_cloudinary_id || old_cloudinary_id != '') {
+        cloudinary.uploader.destroy(old_cloudinary_id, function (err, res) {
+          console.log(err, res);
+        });
+      }
+    });
+
   db('books')
     .delete()
     .where('isbn', req.params.id)
