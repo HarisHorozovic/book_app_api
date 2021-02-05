@@ -1,19 +1,23 @@
 const express = require('express');
 
 const authorController = require('../controllers/AuthorController');
+const authController = require('../controllers/AuthController');
 
 const router = express.Router();
 
 router
   .route('/')
   .get(authorController.getAllAuthors)
-  .post(authorController.createAuthor);
+  .post(authController.isLoggedIn, authorController.createAuthor);
 
 router
   .route('/:id')
   .get(authorController.getAuthor)
-  .put(authorController.updateAuthor)
-  .delete(authorController.deleteAuthor);
+  .put(authController.isLoggedIn, authorController.updateAuthor)
+  .delete(authController.isLoggedIn, authorController.deleteAuthor);
+
+// Protect routes from unauthorized users
+router.use(authController.isLoggedIn);
 
 router
   .route('/:idAuthor/books')
