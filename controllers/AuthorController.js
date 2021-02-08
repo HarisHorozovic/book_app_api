@@ -6,9 +6,9 @@ exports.getAllAuthors = (req, res) => {
     .from('authors')
     .then((data) => {
       if (data.length < 1)
-        res.status(404).json({ status: 'fail', data: 'No authors found' });
+        res.status(404).json({ status: 'fail', error: 'No authors found' });
       else {
-        res.status(200).json({ status: 'success', data });
+        res.status(200).json({ status: 'success', author: data });
       }
     });
 };
@@ -24,10 +24,10 @@ exports.createAuthor = (req, res) => {
     .then((data) => {
       res
         .status(201)
-        .json({ status: 'created', data: 'Author successfully created' });
+        .json({ status: 'created', message: 'Author successfully created' });
     })
     .catch((err) => {
-      res.status(500).json({ status: 'error', err });
+      res.status(500).json({ status: 'error', error: err });
     });
 };
 
@@ -39,9 +39,9 @@ exports.getAuthor = (req, res) => {
       if (data.length < 1) {
         res
           .status(404)
-          .json({ status: 'not found', message: 'Author not found' });
+          .json({ status: 'not found', error: 'Author not found' });
       } else {
-        res.status(200).json({ status: 'success', data });
+        res.status(200).json({ status: 'success', author: data[0] });
       }
     });
 };
@@ -76,9 +76,9 @@ exports.updateAuthor = (req, res) => {
     .where({ id: req.params.id })
     .then((data) => {
       if (data < 1) {
-        res.status(404).json({ status: 'error', data: 'Author not found' });
+        res.status(404).json({ status: 'error', error: 'Author not found' });
       } else {
-        res.status(200).json({ status: 'success', data });
+        res.status(200).json({ status: 'success', author: data });
       }
     });
 };
@@ -110,9 +110,11 @@ exports.deleteAuthor = (req, res) => {
     .where('id', req.params.id)
     .then((data) => {
       if (data < 1) {
-        res.status(404).json({ status: 'error', data: 'Author not found' });
+        res.status(404).json({ status: 'error', error: 'Author not found' });
       } else {
-        res.status(200).json({ status: 'success', data });
+        res
+          .status(200)
+          .json({ status: 'success', message: 'Author successfully deleted' });
       }
     });
 };
@@ -126,11 +128,12 @@ exports.booksFromAuthor = (req, res) => {
     .where('id', req.params.idAuthor)
     .then((data) => {
       if (data.length < 1) {
-        res
-          .status(404)
-          .json({ status: 'fail', data: 'Author not found, can not add book' });
+        res.status(404).json({
+          status: 'fail',
+          error: 'Author not found, can not add book',
+        });
       } else {
-        res.status(200).json({ status: 'success', data });
+        res.status(200).json({ status: 'success', authorBooks: data });
       }
     });
 };
@@ -142,10 +145,10 @@ exports.addBookToAuthor = (req, res) => {
   db('book_authors')
     .insert({ author_id: idAuthor, book_id: idBook })
     .then((data) => {
-      res.status(200).json({ status: 'success', data });
+      res.status(200).json({ status: 'success', authorBook: data });
     })
     .catch((err) => {
-      res.status(500).json({ status: 'error', err });
+      res.status(500).json({ status: 'error', error: err });
     });
 };
 
@@ -159,12 +162,12 @@ exports.removeAuthorFromBook = (req, res) => {
       if (data < 1) {
         res.status(404).json({
           status: 'fail',
-          data: 'This author did not publish that book',
+          error: 'This author did not publish that book',
         });
       } else {
         res.status(200).json({
           status: 'success',
-          data: 'Succesfully removed this books author',
+          message: 'Succesfully removed this books author',
         });
       }
     });

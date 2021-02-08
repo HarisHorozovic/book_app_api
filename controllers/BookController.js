@@ -6,9 +6,9 @@ exports.getAllBooks = (req, res) => {
     .from('books')
     .then((data) => {
       if (data.length < 1) {
-        res.status(404).json({ status: 'fail', data: 'No books found' });
+        res.status(404).json({ status: 'fail', error: 'No books found' });
       } else {
-        res.status(200).json({ status: 'success', data });
+        res.status(200).json({ status: 'success', books: data });
       }
     });
 };
@@ -20,13 +20,36 @@ exports.createBook = (req, res) => {
   if (imageurl == '' || !imageurl) imageurl = null;
 
   if (isbn == '' || isbn == null) {
-    res.status(500).json({ status: 'fail', data: 'Book must have ISBN' });
+    res.status(500).json({ status: 'fail', error: 'Book must have ISBN' });
   }
 
-  db('books')
-    .insert({ isbn, title, pages, published, image: imageurl, cloudinary_id })
+  db.select()
+    .from('books')
+    .where('isbn', isbn)
     .then((data) => {
-      res.status(201).json({ status: 'success', data });
+      console.log(data);
+      if (data && data.length > 1) {
+        res.status(403).json({
+          status: 'fail',
+          message: 'There is already a book with that ISBN',
+        });
+      } else {
+        db('books')
+          .insert({
+            isbn,
+            title,
+            pages,
+            published,
+            image: imageurl,
+            cloudinary_id,
+          })
+          .then((data) => {
+            res.status(201).json({
+              status: 'success',
+              message: 'Book successfully created',
+            });
+          });
+      }
     });
 };
 
@@ -36,11 +59,9 @@ exports.getBook = (req, res) => {
     .where('isbn', req.params.id)
     .then((data) => {
       if (data.length < 1) {
-        res
-          .status(404)
-          .json({ status: 'not found', message: 'Book not found' });
+        res.status(404).json({ status: 'not found', error: 'Book not found' });
       } else {
-        res.status(200).json({ status: 'success', data });
+        res.status(200).json({ status: 'success', book: data[0] });
       }
     });
 };
@@ -76,10 +97,12 @@ exports.updateBook = (req, res) => {
       if (data < 1) {
         res.status(404).json({
           status: 'error',
-          data: 'Cannot update book, book not found',
+          error: 'Cannot update book, book not found',
         });
       } else {
-        res.status(200).json({ status: 'success', data });
+        res
+          .status(200)
+          .json({ status: 'success', message: 'Book updated successfully' });
       }
     });
 };
@@ -113,12 +136,12 @@ exports.deleteBook = (req, res) => {
       if (data < 1) {
         res.status(404).json({
           status: 'error',
-          data: 'Cannot delete book, book not found',
+          error: 'Cannot delete book, book not found',
         });
       } else {
         res
           .status(200)
-          .json({ status: 'success', data: 'Book deleted successfully' });
+          .json({ status: 'success', message: 'Book deleted successfully' });
       }
     });
 };
@@ -132,11 +155,12 @@ exports.getBookAuthors = (req, res) => {
     .where('isbn', req.params.id)
     .then((data) => {
       if (data.length < 1) {
-        res
-          .status(404)
-          .json({ status: 'fail', data: 'Book not found, can not add author' });
+        res.status(404).json({
+          status: 'fail',
+          error: 'Book not found, can not add author',
+        });
       } else {
-        res.status(200).json({ status: 'success', data });
+        res.status(200).json({ status: 'success', bookAuthors: data });
       }
     });
 };
@@ -148,9 +172,9 @@ exports.addNewBookAuthor = (req, res) => {
   db('book_authors')
     .insert({ author_id: idAuthor, book_id: id })
     .then((data) => {
-      res.status(200).json({ status: 'success', data });
+      res.status(200).json({ status: 'success', bookAuthor: data });
     })
     .catch((err) => {
-      res.status(500).json({ status: 'error', err });
+      res.status(500).json({ status: 'error', error: err });
     });
 };

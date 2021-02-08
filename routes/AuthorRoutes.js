@@ -12,7 +12,7 @@ router
   .route('/')
   .get(authorController.getAllAuthors)
   .post(
-    authController.isLoggedIn,
+    authController.protect,
     upload.single('image'),
     uploadImage,
     authorController.createAuthor
@@ -22,15 +22,15 @@ router
   .route('/:id')
   .get(authorController.getAuthor)
   .put(
-    authController.isLoggedIn,
+    authController.protect,
     upload.single('image'),
     uploadImage,
     authorController.updateAuthor
   )
-  .delete(authController.isLoggedIn, authorController.deleteAuthor);
+  .delete(authController.protect, authorController.deleteAuthor);
 
 // Protect routes from unauthorized users
-router.use(authController.isLoggedIn);
+router.use(authController.protect);
 
 router
   .route('/:idAuthor/books')
