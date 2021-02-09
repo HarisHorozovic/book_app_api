@@ -17,10 +17,14 @@ exports.createBook = (req, res) => {
   const { title, pages, published, cloudinary_id } = req.body;
   let { imageurl, isbn } = req.body;
 
+  console.log(imageurl);
+
   if (imageurl == '' || !imageurl) imageurl = null;
 
   if (isbn == '' || isbn == null) {
-    res.status(500).json({ status: 'fail', error: 'Book must have ISBN' });
+    return res
+      .status(500)
+      .json({ status: 'fail', error: 'Book must have ISBN' });
   }
 
   db.select()
@@ -74,7 +78,7 @@ exports.updateBook = (req, res) => {
   if (!imageurl) imageurl = null;
   // If it is then delete old image from the cloud
   else {
-    // Retrieve the user we want to update
+    // Retrieve the book we want to update
     db.select('cloudinary_id')
       .from('books')
       .where({ isbn: req.params.id })
@@ -157,11 +161,17 @@ exports.getBookAuthors = (req, res) => {
       if (data.length < 1) {
         res.status(404).json({
           status: 'fail',
-          error: 'Book not found, can not add author',
+          error: 'There are no authors for this book',
         });
       } else {
         res.status(200).json({ status: 'success', bookAuthors: data });
       }
+    })
+    .catch((err) => {
+      res.status(404).json({
+        status: 'fail',
+        error: 'There are no authors for this book',
+      });
     });
 };
 
@@ -172,9 +182,14 @@ exports.addNewBookAuthor = (req, res) => {
   db('book_authors')
     .insert({ author_id: idAuthor, book_id: id })
     .then((data) => {
-      res.status(200).json({ status: 'success', bookAuthor: data });
+      res
+        .status(200)
+        .json({ status: 'success', message: 'Author succesfully added' });
     })
     .catch((err) => {
-      res.status(500).json({ status: 'error', error: err });
+      res.status(500).json({
+        status: 'error',
+        error: 'This author is already books author',
+      });
     });
 };

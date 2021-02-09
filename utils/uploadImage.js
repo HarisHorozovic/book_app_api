@@ -2,6 +2,7 @@ const cloudinary = require('../utils/cloudinary');
 
 module.exports = uploadImage = async (req, res, next) => {
   try {
+    console.log(req.file);
     if (!req.file) next();
     else {
       const result = await cloudinary.uploader.upload(req.file.path);

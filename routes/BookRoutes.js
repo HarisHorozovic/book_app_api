@@ -30,16 +30,13 @@ router
   )
   .delete(authController.protect, bookController.deleteBook);
 
-// Protect routes from unauthorized users
-router.use(authController.protect);
-
 router
   .route('/:id/authors')
   .get(bookController.getBookAuthors)
-  .post(bookController.addNewBookAuthor);
+  .post(authController.protect, bookController.addNewBookAuthor);
 
 router
   .route('/:idBook/authors/:idAuthor')
-  .delete(authorController.removeAuthorFromBook);
+  .delete(authController.protect, authorController.removeAuthorFromBook);
 
 module.exports = router;

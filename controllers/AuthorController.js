@@ -19,6 +19,11 @@ exports.createAuthor = (req, res) => {
 
   if (imageurl == '' || !imageurl) imageurl = null;
 
+  if (!dob || dob == '') {
+    return res
+      .status(400)
+      .json({ status: 'error', error: 'User must have date of birth' });
+  }
   db('authors')
     .insert({ firstName, lastName, dob, image: imageurl, cloudinary_id })
     .then((data) => {
@@ -55,7 +60,7 @@ exports.updateAuthor = (req, res) => {
   if (!imageurl) imageurl = null;
   // If it is then delete old image from the cloud
   else {
-    // Retrieve the user we want to update
+    // Retrieve the author we want to update
     db.select('cloudinary_id')
       .from('authors')
       .where({ id: req.params.id })
@@ -78,7 +83,9 @@ exports.updateAuthor = (req, res) => {
       if (data < 1) {
         res.status(404).json({ status: 'error', error: 'Author not found' });
       } else {
-        res.status(200).json({ status: 'success', author: data });
+        res
+          .status(200)
+          .json({ status: 'success', message: 'Author sucessfully updated' });
       }
     });
 };
@@ -139,13 +146,16 @@ exports.booksFromAuthor = (req, res) => {
 };
 
 exports.addBookToAuthor = (req, res) => {
+  console.log(req.body);
   const { idAuthor } = req.params;
   const { idBook } = req.body;
 
   db('book_authors')
     .insert({ author_id: idAuthor, book_id: idBook })
     .then((data) => {
-      res.status(200).json({ status: 'success', authorBook: data });
+      res
+        .status(200)
+        .json({ status: 'success', message: 'Book added successfully' });
     })
     .catch((err) => {
       res.status(500).json({ status: 'error', error: err });
